@@ -1,0 +1,43 @@
+name: core
+tasks:
+ core_unknown:
+    description: Query doesn't fall into any of the other tasks
+ core_capabilities:
+    name: Capabilities
+    description: Inquiries what we can do or what capabilities we have
+    steps:
+      - utter: Our capabilities are... blabla
+ add_numbers:
+    name: Add numbers
+    description: User wants to add 2 numbers
+    steps:
+      - if: foo == bar
+      - collect: first_number
+        name: First number
+        type: number
+      - collect: second_number
+        name: Second number
+        type: number
+      - action: add_numbers
+ insights_advisor:
+    name: Advisor recommendations
+    description: Inquiries about advisor recommendations
+    steps:
+      - collect: advisor_system
+        choices:
+          - openshift
+          - rhel
+      - if: slots.advisor_system == "openshift"
+        then:
+          - action: advisor_openshift
+          - next: END
+        else:
+          - collect: advisor_type
+            choices:
+              - performance
+              - security
+              - availability
+              - stability
+              - new
+              - critical
+              - workload

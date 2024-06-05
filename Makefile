@@ -19,5 +19,8 @@ all: build
 .PHONY: build
 build: $(BINDIR)/$(BINNAME)
 
+run: build
+	OPENAI_API_KEY=1 $(BINDIR)/$(BINNAME)
+
 $(BINDIR)/$(BINNAME): $(SRC)
 	GO111MODULE=on CGO_ENABLED=$(CGO_ENABLED) go build $(GOFLAGS) -trimpath -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o '$(BINDIR)'/$(BINNAME) ./cmd/eve
