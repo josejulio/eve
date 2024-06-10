@@ -6,9 +6,14 @@ import (
 	"github.com/spf13/viper"
 	"github.com/gin-gonic/gin"
 
+<<<<<<< Updated upstream
 	"github.com/josejulio/eve/internal/api"
 	"github.com/josejulio/eve/internal/task"
 	"github.com/josejulio/eve/internal/session"
+=======
+	"github.com/sriroopar/eve_va/internal/api"
+	"github.com/sriroopar/eve_va/internal/task"
+>>>>>>> Stashed changes
 )
 
 func main() {

@@ -1,3 +1,8 @@
 llm:
+<<<<<<< Updated upstream
   #base_url: http://127.0.0.1:8000/v1
   base_url: http://192.168.0.104:8000/v1
+=======
+  base_url: http://127.0.0.1:8000/v1
+  # base_url: http://192.168.0.118:8000/v1
+>>>>>>> Stashed changes

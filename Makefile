@@ -22,7 +22,7 @@ all: build
 build: $(BINDIR)/$(BINNAME) $(BINDIR)/$(BINNAME_CLI)
 
 run: build
-	OPENAI_API_KEY=1 $(BINDIR)/$(BINNAME)
+	OPENAI_API_KEY=abc123 $(BINDIR)/$(BINNAME)
 
 run-cli: build
 	$(BINDIR)/$(BINNAME_CLI)

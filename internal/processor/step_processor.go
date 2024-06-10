@@ -87,8 +87,27 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 
 			} else if step.TaskStepIf.If != "" {
 				// Processing if step
-				return nil, errors.New("Not implemented yet")
+				// return nil, errors.New("Not implemented yet")
+				conditionResult, err := evaluateCondition(step.TaskStepIf.If, session)
+				if err != nil {
+					return nil, err
+				}
+				if conditionResult {
+					// Condition is true, proceed to the then step
+					currentStepPath = []int{step.TaskStepIf.Then}
+				} 
+				else {
+					// Condition is false, move to the else step if present
+					if step.TaskStepIf.Else != "" {
+						currentStepPath = []int{step.TaskStepIf.Else}
+					} 
+					else {
+						// No else step, move to the next step in the sequence
+						currentStepPath = []int{currentStepPath[0] + 1}
+					}
+				}
 			}
+
 
 			// Step processed - increment and check we are still in a valid step or exit
 			currentStepPath = []int{currentStepPath[0]+1}

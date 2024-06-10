@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/tmc/langchaingo/llms"
-	"github.com/josejulio/eve/internal/task"
+	"github.com/sriroopar/eve/internal/task"
 )
 
 var systemTaskTemplate *template.Template
