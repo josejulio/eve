@@ -152,7 +152,8 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 
 	response := &ProcessorResponse{Messages: []string{}}
 
-	for {		
+	for {
+		incrementPath := true
 		if currentTask != "" {
 			// We have a task - check what's the next step and stop when requiring input from the user
 			// If we haven't processed it already
@@ -226,16 +227,35 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 
 			} else if step.TaskStepIf.If != "" {
 				// Processing if step
-				// return nil, errors.New("Not implemented yet")
+				conditionResult, err := evaluateCondition(step.TaskStepIf.If, session)
+				if err != nil {
+					return nil, err
+				}
+
+				if conditionResult {
+					if len(step.TaskStepIf.Then) > 0 {
+						// Condition is true, proceed to the then step
+						currentStepPath = append(currentStepPath, thenStepIndex, 0)
+						incrementPath = false
+					}
+				} else {
+					// Condition is false, move to the else step if present
+					if len(step.TaskStepIf.Else) > 0 {
+						currentStepPath = append(currentStepPath, elseStepIndex, 0)
+						incrementPath = false
+					}
+				}
 			}
 
-			// Step processed - increment and check we are still in a valid step or exit
-			currentStepPath, err = incrementStepPath(stepTask, currentStepPath)
 
-			if err != nil {
-				currentTask = ""
-				currentStepPath = []int{0}
-				break
+			// Step processed - increment and check we are still in a valid step or exit
+			if incrementPath {
+				currentStepPath, err = incrementStepPath(stepTask, currentStepPath)
+				if err != nil {
+					currentTask = ""
+					currentStepPath = []int{0}
+					break
+				}
 			}
 		} else {
 			// Process the input to find what the user wants to do
