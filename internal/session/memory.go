@@ -34,6 +34,10 @@ func (session *MemorySession) SetSlot(slot string, value interface{}) {
 	session.data.Slots[slot] = value
 }
 
+func (session *MemorySession) GetSlots() (map[string]interface{}) {
+	return session.data.Slots
+}
+
 func (session *MemorySession) SetTask(task string) {
 	session.data.Task = task
 	session.data.StepPath = []int{0}

@@ -8,7 +8,7 @@ Here is the list of tasks that are possible:
 - {{.Id}}: {{.Description}}
 {{- end}}
 
-Respond with a JSON, filling the following template:
+Respond with a raw JSON, filling the following template, do not use backticks or any other code blocks or formatting:
 
 ```json
 {
@@ -17,5 +17,3 @@ Respond with a JSON, filling the following template:
 ```
 
 Where '$TASKS' is an array made up from the keys of the found task.
-
-Do not output anything else.

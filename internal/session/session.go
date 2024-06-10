@@ -9,6 +9,7 @@ type SessionData struct {
 type Session interface {
 	GetSlot(slot string) (interface{})
 	SetSlot(slot string, value interface{})
+	GetSlots() (map[string]interface{})
 	SetTask(task string)
 	GetTask() (string)
 	SetStepPath(path []int)

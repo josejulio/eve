@@ -3,7 +3,8 @@ package processor
 import(
 	"context"
 	"strconv"
-	"errors"
+	"text/template"
+	"bytes"
 
 	"github.com/tmc/langchaingo/llms"
 
@@ -13,6 +14,26 @@ import(
 	"github.com/josejulio/eve/internal/actions"
 
 )
+
+func templateUtterance(utterance string, session session.Session) (string, error) {
+	templ, err := template.New("utterance").Parse(utterance)
+
+	if err != nil {
+		return "", err
+	}
+
+	var output bytes.Buffer
+	err = templ.Execute(&output, map[string]interface{}{
+		"slots": session.GetSlots(),
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return output.String(), nil
+}
+
 
 func StepProcessor(ctx context.Context, input string, session session.Session, taskDefinition task.TaskDefinition, llm llms.Model) (*ProcessorResponse, error) {
 	processedInput := false
@@ -73,10 +94,14 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 				processedInput = true
 			} else if step.TaskStepUtter.Utter != "" {
 				// Processing a utter step
-				response.Messages = append(response.Messages, step.TaskStepUtter.Utter)
+				msg, err := templateUtterance(step.TaskStepUtter.Utter, session)
+				if err != nil {
+					return nil, err
+				}
+
+				response.Messages = append(response.Messages, msg)
 			} else if step.TaskStepAction.Action != "" {
 				// Processing action step
-				// ToDo: Allow to write messages
 				newMessages, err := actions.ExecuteAction(step.TaskStepAction.Action, session)
 
 				if err != nil {
@@ -87,7 +112,7 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 
 			} else if step.TaskStepIf.If != "" {
 				// Processing if step
-				return nil, errors.New("Not implemented yet")
+				// return nil, errors.New("Not implemented yet")
 			}
 
 			// Step processed - increment and check we are still in a valid step or exit
@@ -125,5 +150,5 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 }
 
 type ProcessorResponse struct {
-	Messages []string `json:" messages"`
+	Messages []string `json:"messages"`
 }

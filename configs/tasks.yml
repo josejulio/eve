@@ -15,20 +15,22 @@ tasks:
       - collect: first_number
         name: First number
         type: number
-      - utter: Good, now give me the second number.
+      - utter: Good the first number is {{index .slots "first_number"}} now give me the second number.
       - collect: second_number
         name: Second number
         type: number
+      - utter: The second number is {{index .slots "second_number"}}
       - action: add_numbers
  insights_advisor:
     name: Advisor recommendations
     description: Inquiries about advisor recommendations
     steps:
-      - utter: Not implemented yet! I'll probably break now, have fun!
+      - utter: So you want to see your advisor recommendations, is it for RHEL or OpenShift?
       - collect: advisor_system
         choices:
           - openshift
           - rhel
+      - utter: So you want to see those for {{index .slots "advisor_system"}}. This is as far as this demo goes, bye!
       - if: slots.advisor_system == "openshift"
         then:
           - action: advisor_openshift

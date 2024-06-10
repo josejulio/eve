@@ -4,9 +4,11 @@ Follow this process when extracting information:
 
     Fields are specified in YAML format.
     Each field has a type and an allowed array with possible values. Ignore fields that do not match the type or are not in the allowed list. Only use a value if it was inferred from the input.
+    Respond with the specified type i.e. type number, input: one hundred ouput: 100
     Each field has a description for context.
     Do not include ignored fields in the response.
     Respond only with the extracted fields as a JSON object. If no valid fields are found, respond with an empty JSON object ({}).
+    Only respond with a raw JSON, no backticks or any other code blocks or formatting.
 
 Here is the field to extract from this query:
 
