@@ -2,21 +2,25 @@ package api
 
 import (
 	"log"
+//	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/tmc/langchaingo/llms"
 
-	"github.com/josejulio/eve/internal/prompt"
+//	"github.com/josejulio/eve/internal/prompt"
 	"github.com/josejulio/eve/internal/task"
+	"github.com/josejulio/eve/internal/session"
+//	"github.com/josejulio/eve/internal/actions"
+	"github.com/josejulio/eve/internal/processor"
 )
 
-func TalkPostAPI(c *gin.Context, llm llms.Model, taskDefinition task.TaskDefinition) {
+func TalkPostAPI(c *gin.Context, llm llms.Model, taskDefinition task.TaskDefinition, session session.Session) {
 	input := c.Query("input")
-
-	response, err := prompt.Task(c.Request.Context(), llm, taskDefinition, input)
+	
+	response, err := processor.StepProcessor(c.Request.Context(), input, session, taskDefinition, llm)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 		c.JSON(400, err)
+	} else {
+		c.JSON(200, response)
 	}
-
-	c.JSON(200, response)
 }

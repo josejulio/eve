@@ -6,15 +6,16 @@ tasks:
     name: Capabilities
     description: Inquiries what we can do or what capabilities we have
     steps:
-      - utter: Our capabilities are... blabla
+      - utter: I can ~add numbers~ and show your ~advisor recommendations~ (sort of).
  add_numbers:
     name: Add numbers
     description: User wants to add 2 numbers
     steps:
-      - if: foo == bar
+      - utter: Ok, you want to add numbers. Please give me the first number.
       - collect: first_number
         name: First number
         type: number
+      - utter: Good, now give me the second number.
       - collect: second_number
         name: Second number
         type: number
@@ -23,6 +24,7 @@ tasks:
     name: Advisor recommendations
     description: Inquiries about advisor recommendations
     steps:
+      - utter: Not implemented yet! I'll probably break now, have fun!
       - collect: advisor_system
         choices:
           - openshift

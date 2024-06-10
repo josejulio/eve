@@ -16,13 +16,15 @@ type TaskStep struct {
 	Id string `yaml:"id"`
 	TaskStepCollect `yaml:",inline"`
 	TaskStepIf `yaml:",inline"`
+	TaskStepAction `yaml:",inline"`
+	TaskStepUtter `yaml:",inline"`
 	Next string `yaml:"next"`
 }
 
 type TaskStepCollect struct {
 	Name string `yaml:"name"`
 	Collect string `yaml:"collect"`
-	Choices []string `yaml:"choices"`
+	Choices interface{} `yaml:"choices"`
 	Type string `yaml:"type"`
 }
 
@@ -30,6 +32,14 @@ type TaskStepIf struct {
 	If string `yaml:"if,omitempty"`
 	Then []TaskStep `yaml:"then"`
 	Else []TaskStep `yaml:"else"`
+}
+
+type TaskStepAction struct {
+	Action string `yaml:"action,omitempty"`
+}
+
+type TaskStepUtter struct {
+	Utter string `yaml:"utter,omitempty"`
 }
 
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/josejulio/eve/internal/api"
 	"github.com/josejulio/eve/internal/task"
+	"github.com/josejulio/eve/internal/session"
 )
 
 func main() {
@@ -32,10 +33,12 @@ func main() {
 		panic(fmt.Errorf("fatal error loading llm: %w", err))
 	}
 
+	memorySessionProvider := session.NewMemorySessionProvider()
+
 	r := gin.Default()
 	r.GET("/health", api.HealthGetAPI)
 	r.GET("/talk", func(c *gin.Context) {
-		api.TalkPostAPI(c, llm, *taskDefinition)
+		api.TalkPostAPI(c, llm, *taskDefinition, memorySessionProvider.GetSession("user1"))
 	})
 	r.Run()
 }
