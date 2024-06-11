@@ -12,9 +12,10 @@ Follow this process when extracting information:
 
 Here is the field to extract from this query:
 
-```yaml
 {{.CollectData}}
-```
 
 Respond only with the extracted fields as a JSON object. If no valid fields are found, respond with an empty JSON {}.
 Stop after writing the JSON.
+
+e.g. if we are extracting the field "color" and the input is: "I want green" the output should be:
+{ "color": "green" }

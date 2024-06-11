@@ -99,9 +99,9 @@ func incrementStepPath(t task.Task, path []int) ([]int, error) {
 	}
 
 	for {
-		if len(stepPath) == 0 {
+		if len(path) == 0 {
 			return nil, errors.New("No next step found for path")
-		} else if (len(stepPath) == 1) {
+		} else if (len(path) == 1) {
 			// Root level, special case
 			nextIndex := path[0] + 1
 			if nextIndex < len(t.Steps) {
@@ -111,29 +111,28 @@ func incrementStepPath(t task.Task, path []int) ([]int, error) {
 			}
 		} else {
 			var prevStep task.TaskStep
-			var elseOrThen, prevIndex int
-			stepPath, prevStep = stepPath[:len(stepPath) - 2], stepPath[len(stepPath) - 1]
-			path, elseOrThen, prevIndex = path[:len(path) - 3], path[len(path) - 2], path[len(path) - 1]
-	
-			if prevStep.TaskStepIf.If == "" {
-				return nil, errors.New("Invalid path: Does not point to an TakeStepIf")
-			}
-	
-			var subSteps []task.TaskStep
-			if elseOrThen == thenStepIndex {
-				subSteps = prevStep.TaskStepIf.Then
-			} else if elseOrThen == elseStepIndex {
-				subSteps = prevStep.TaskStepIf.Else
-			} else {
-				return nil, errors.New("Invalid path: Does not have an else/then index")
-			}
-	
-			nextIndex := prevIndex + 1
-	
-			if nextIndex < len(subSteps) {
-				newPath := make([]int, len(path) + 2)
-				newPath = append(newPath, path...)
-				return append(newPath, elseOrThen, nextIndex), nil
+			stepPath, prevStep = stepPath[:len(stepPath) - 1], stepPath[len(stepPath) - 1]
+
+			if prevStep.TaskStepIf.If != "" { // If is not the If step, skip it, nothing to do at this level
+				var elseOrThen, prevIndex int
+				path, elseOrThen, prevIndex = path[:len(path) - 2], path[len(path) - 2], path[len(path) - 1]
+		
+				var subSteps []task.TaskStep
+				if elseOrThen == thenStepIndex {
+					subSteps = prevStep.TaskStepIf.Then
+				} else if elseOrThen == elseStepIndex {
+					subSteps = prevStep.TaskStepIf.Else
+				} else {
+					return nil, errors.New("Invalid path: Does not have an else/then index")
+				}
+		
+				nextIndex := prevIndex + 1
+		
+				if nextIndex < len(subSteps) {
+					newPath := make([]int, 0)
+					newPath = append(newPath, path...)
+					return append(newPath, elseOrThen, nextIndex), nil
+				}
 			}
 		}		
 	}
@@ -174,7 +173,7 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 					break
 				}
 
-				response, err := prompt.Collect(ctx, llm, []task.TaskStepCollect{
+				collectResponse, err := prompt.Collect(ctx, llm, []task.TaskStepCollect{
 					step.TaskStepCollect,
 				}, input)
 
@@ -184,7 +183,7 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 
 				isValid := false
 
-				value, ok := response[step.TaskStepCollect.Collect]
+				value, ok := collectResponse[step.TaskStepCollect.Collect]
 				if ok {
 					// Do validations - our LLM could be using a wrong type
 					// For now only checking if a number is an integer
@@ -198,12 +197,17 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 							}
 						}
 					} else {
-						isValid = true
+						if value != "" {
+							isValid = true
+						}
 					}
 				}
 
 				if isValid {
 					session.SetSlot(step.TaskStepCollect.Collect, value)
+				} else {
+					incrementPath = false
+					response.Messages = append(response.Messages, "I couldn't get that. Please try again!")
 				}
 
 				processedInput = true

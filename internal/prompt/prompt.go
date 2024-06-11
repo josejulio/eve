@@ -26,7 +26,7 @@ func buildPrompt(promptTemplate *template.Template, arguments map[string]interfa
 		},
 		{
 			Role:  llms.ChatMessageTypeHuman,
-			Parts: []llms.ContentPart{llms.TextContent{query}},
+			Parts: []llms.ContentPart{llms.TextContent{"User input:" + query}},
 		},
 	}, nil
 }

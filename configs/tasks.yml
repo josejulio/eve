@@ -2,6 +2,8 @@ name: core
 tasks:
  core_unknown:
     description: Query doesn't fall into any of the other tasks
+    steps:
+      - utter: I don't know what you mean with that- Please try again! You can ask me what I can do!
  core_capabilities:
     name: Capabilities
     description: Inquiries what we can do or what capabilities we have
@@ -30,12 +32,13 @@ tasks:
         choices:
           - openshift
           - rhel
-      - utter: So you want to see those for {{index .slots "advisor_system"}}. This is as far as this demo goes, bye!
+      - utter: Got it, you want to see advisor recommendations for {{index .slots "advisor_system"}}.
       - if: slots["advisor_system"] == "openshift"
         then:
-          - action: advisor_openshift
-          - next: END
+          - utter: Here is your list of advisor recommendations for openshift
+          - utter: Just kidding, I don't have that, bye!
         else:
+          - utter: What kind of recommendations would you like to see?
           - collect: advisor_type
             choices:
               - performance
@@ -45,3 +48,4 @@ tasks:
               - new
               - critical
               - workload
+          - utter: Maybe someday i'll be able to show you {{index .slots "advisor_type"}} recommendations for advisor...
