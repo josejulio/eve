@@ -31,7 +31,7 @@ tasks:
           - openshift
           - rhel
       - utter: So you want to see those for {{index .slots "advisor_system"}}. This is as far as this demo goes, bye!
-      - if: slots.advisor_system == "openshift"
+      - if: slots["advisor_system"] == "openshift"
         then:
           - action: advisor_openshift
           - next: END

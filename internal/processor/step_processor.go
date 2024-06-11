@@ -8,12 +8,12 @@ import(
 	"errors"
 
 	"github.com/tmc/langchaingo/llms"
+	"github.com/expr-lang/expr"
 
 	"github.com/josejulio/eve/internal/prompt"
 	"github.com/josejulio/eve/internal/task"
 	"github.com/josejulio/eve/internal/session"
 	"github.com/josejulio/eve/internal/actions"
-
 )
 
 func templateUtterance(utterance string, session session.Session) (string, error) {
@@ -247,7 +247,6 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 				}
 			}
 
-
 			// Step processed - increment and check we are still in a valid step or exit
 			if incrementPath {
 				currentStepPath, err = incrementStepPath(stepTask, currentStepPath)
@@ -284,4 +283,27 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 
 type ProcessorResponse struct {
 	Messages []string `json:"messages"`
+}
+
+func evaluateCondition(condition string, session session.Session) (bool, error) {
+    env := map[string]interface{}{
+        "slots": session.GetSlots(),
+    }
+
+    program, err := expr.Compile(condition, expr.Env(env))
+    if err != nil {
+        return false, err
+    }
+
+    output, err := expr.Run(program, env)
+    if err != nil {
+        return false, err
+    }
+
+    result, ok := output.(bool)
+    if !ok {
+        return false, errors.New("Condition did not evaluate to a boolean")
+    }
+
+    return result, nil
 }

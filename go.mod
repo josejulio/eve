@@ -5,8 +5,8 @@ go 1.22.3
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/tmc/langchaingo v0.1.10
+	
 )
-
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
