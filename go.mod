@@ -5,8 +5,8 @@ go 1.22.3
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/tmc/langchaingo v0.1.10
+	
 )
-
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
@@ -22,11 +22,7 @@ require (
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
-<<<<<<< Updated upstream
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
-=======
-	github.com/expr-lang/expr v1.16.9 // indirect
->>>>>>> Stashed changes
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
