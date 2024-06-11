@@ -89,9 +89,7 @@ func Collect(ctx context.Context, llm llms.Model, collects []task.TaskStepCollec
 
 	var responseMap map[string]interface{}
 
-	log.Print("Before unmarshal")
 	err = yaml.Unmarshal([]byte(c1.Content), &responseMap)
-	log.Printf("After unmarshal: err: %+v map: %+v", err, responseMap)
 
 	if err != nil {
 		return nil, err

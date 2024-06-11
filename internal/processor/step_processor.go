@@ -5,6 +5,7 @@ import(
 	"strconv"
 	"text/template"
 	"bytes"
+	"errors"
 
 	"github.com/tmc/langchaingo/llms"
 
@@ -34,6 +35,115 @@ func templateUtterance(utterance string, session session.Session) (string, error
 	return output.String(), nil
 }
 
+const thenStepIndex = 0
+const elseStepIndex = 1
+
+func getStep(t task.Task, path []int) (*task.TaskStep, error) {
+	stepPath, err := getStepsForPath(t, path)
+	if err != nil {
+		return nil, err
+	}
+
+	return &stepPath[len(stepPath) - 1], nil
+}
+
+func getStepsForPath(t task.Task, path []int) ([]task.TaskStep, error) {
+	var step task.TaskStep = t.Steps[path[0]]
+	stepPath := []task.TaskStep{step}
+
+	path = path[1:]
+
+	for {
+		// We will consume 2 at once
+		if len(path) < 1 {
+			break
+		}
+
+		var elseOrThen, index int
+		elseOrThen, index, path = path[0], path[1], path[2:]
+		
+		if step.TaskStepIf.If == "" {
+			return nil, errors.New("Invalid path: Does not point to an TakeStepIf")
+		}
+
+		var subSteps []task.TaskStep
+		if elseOrThen == thenStepIndex {
+			subSteps = step.TaskStepIf.Then
+		} else if elseOrThen == elseStepIndex {
+			subSteps = step.TaskStepIf.Else
+		} else {
+			return nil, errors.New("Invalid path: Does not have an else/then index")
+		}
+
+		if index >= len(subSteps) {
+			return nil, errors.New("Invalid path: Does not have a valid else subpath")
+		}
+
+		step = subSteps[index]
+		stepPath = append(stepPath, step)
+	}
+
+	return stepPath, nil
+}
+
+func incrementStepPath(t task.Task, path []int) ([]int, error) {
+	stepPath, err := getStepsForPath(t, path)
+	if err != nil {
+		return nil, err
+	}
+
+	lastStep := stepPath[len(stepPath) - 1]
+
+	if lastStep.Next != "" { // Find the step with the selected id
+		return stepPathForStepId(t, lastStep.Next)
+	}
+
+	for {
+		if len(stepPath) == 0 {
+			return nil, errors.New("No next step found for path")
+		} else if (len(stepPath) == 1) {
+			// Root level, special case
+			nextIndex := path[0] + 1
+			if nextIndex < len(t.Steps) {
+				return []int{nextIndex}, nil
+			} else {
+				return nil, errors.New("No next step found for path")
+			}
+		} else {
+			var prevStep task.TaskStep
+			var elseOrThen, prevIndex int
+			stepPath, prevStep = stepPath[:len(stepPath) - 2], stepPath[len(stepPath) - 1]
+			path, elseOrThen, prevIndex = path[:len(path) - 3], path[len(path) - 2], path[len(path) - 1]
+	
+			if prevStep.TaskStepIf.If == "" {
+				return nil, errors.New("Invalid path: Does not point to an TakeStepIf")
+			}
+	
+			var subSteps []task.TaskStep
+			if elseOrThen == thenStepIndex {
+				subSteps = prevStep.TaskStepIf.Then
+			} else if elseOrThen == elseStepIndex {
+				subSteps = prevStep.TaskStepIf.Else
+			} else {
+				return nil, errors.New("Invalid path: Does not have an else/then index")
+			}
+	
+			nextIndex := prevIndex + 1
+	
+			if nextIndex < len(subSteps) {
+				newPath := make([]int, len(path) + 2)
+				newPath = append(newPath, path...)
+				return append(newPath, elseOrThen, nextIndex), nil
+			}
+		}		
+	}
+
+}
+
+func stepPathForStepId(t task.Task, stepId string) ([]int, error) {
+	return nil, errors.New("Not implemented")
+}
+
 
 func StepProcessor(ctx context.Context, input string, session session.Session, taskDefinition task.TaskDefinition, llm llms.Model) (*ProcessorResponse, error) {
 	processedInput := false
@@ -46,10 +156,14 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 		if currentTask != "" {
 			// We have a task - check what's the next step and stop when requiring input from the user
 			// If we haven't processed it already
-			steps := taskDefinition.Tasks[currentTask].Steps
+			stepTask := taskDefinition.Tasks[currentTask]
 
 			// We should support nested paths - for now we do not.
-			step := steps[currentStepPath[0]]
+			step, err := getStep(stepTask, currentStepPath)
+
+			if err != nil {
+				return nil, err
+			}
 
 			// Process step
 			if step.TaskStepCollect.Collect != "" {
@@ -116,14 +230,13 @@ func StepProcessor(ctx context.Context, input string, session session.Session, t
 			}
 
 			// Step processed - increment and check we are still in a valid step or exit
-			currentStepPath = []int{currentStepPath[0]+1}
-			if currentStepPath[0] >= len(steps) {
-				// End of flow - break flow if there is no other flow
+			currentStepPath, err = incrementStepPath(stepTask, currentStepPath)
+
+			if err != nil {
 				currentTask = ""
 				currentStepPath = []int{0}
 				break
 			}
-
 		} else {
 			// Process the input to find what the user wants to do
 			response, err := prompt.Task(ctx, llm, taskDefinition, input)
