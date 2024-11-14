@@ -1,5 +1,8 @@
 EVE - Enhanced Virtual Engagement
 
+Hackathon demo:
+https://youtu.be/zSxOnf-5aFs
+
 1. Install go 1.22.3+
 2. make
 3. Update `config.yml` with your InstructLab's LLM service address
